@@ -1,4 +1,4 @@
-﻿namespace JSL.Utility
+﻿namespace Utilities
 {
     public class Singleton<T> where T: new ()
     {

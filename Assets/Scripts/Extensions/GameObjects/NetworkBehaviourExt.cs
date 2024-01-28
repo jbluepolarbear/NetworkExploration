@@ -48,6 +48,21 @@ namespace Extensions.GameObjects
                 asyncClientRpcTargets.Add(attribute.Target, method);
             }
         }
+        
+        protected abstract IEnumerator StartServer();
+        protected abstract IEnumerator StartClient();
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            if (IsServer)
+            {
+                StartCoroutine(StartServer());
+            }
+            else
+            {
+                StartCoroutine(StartClient());
+            }
+        }
 
         [ServerRpc]
         public void SendMessageServerRpc(uint target, uint messageId, RpcMessage data, ServerRpcParams rpcParams = default)

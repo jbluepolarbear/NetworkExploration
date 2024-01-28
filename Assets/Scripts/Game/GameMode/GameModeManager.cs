@@ -21,7 +21,15 @@ namespace Game.GameMode
             yield return nextGameMode.EnterGameMode();
             ActiveGameMode = nextGameMode;
         }
-        
-        
+
+        protected override IEnumerator StartServer()
+        {
+            yield return null;
+        }
+
+        protected override IEnumerator StartClient()
+        {
+            yield return null;
+        }
     }
 }

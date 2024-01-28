@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using Contexts;
+using Data;
 using Unity.Netcode;
 using UnityEngine;
 using NetworkPlayer = Game.Player.NetworkPlayer;
@@ -10,6 +11,11 @@ namespace Game.Manager
     {
         private void OnGUI()
         {
+            if (NetworkStartUpSettingsProvider.NetworkStartUpSettings != null)
+            {
+                Destroy(this);
+                return;
+            }
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
 
             var networkManager = NetworkManager.Singleton;
@@ -18,55 +24,28 @@ namespace Game.Manager
                 if (GUILayout.Button("Host"))
                 {
                     networkManager.StartHost();
+                    Destroy(this);
+                    return;
                 }
 
                 if (GUILayout.Button("Client"))
                 {
                     networkManager.StartClient();
                     ServerContext.Clear();
+                    Destroy(this);
+                    return;
                 }
 
                 if (GUILayout.Button("Server"))
                 {
                     networkManager.StartServer();
                     ClientContext.Clear();
-                }
-            }
-            else
-            {
-                GUILayout.Label($"Mode: {(networkManager.IsHost ? "Host" : networkManager.IsServer ? "Server" : "Client")}");
-
-                // "Random Teleport" button will only be shown to clients
-                if (networkManager.IsClient)
-                {
-                    if (GUILayout.Button("Random Teleport"))
-                    {
-                        if (networkManager.LocalClient != null)
-                        {
-                            // Get `BootstrapPlayer` component from the player's `PlayerObject`
-                            if (networkManager.LocalClient.PlayerObject.TryGetComponent(out NetworkPlayer bootstrapPlayer))
-                            {
-                                // Invoke a `ServerRpc` from client-side to teleport player to a random position on the server-side
-                                bootstrapPlayer.RandomTeleportServerRpc();
-                                StartCoroutine(PingPong(bootstrapPlayer));
-                            }
-                        }
-                    }
+                    Destroy(this);
+                    return;
                 }
             }
 
             GUILayout.EndArea();
-        }
-        
-        public IEnumerator PingPong(NetworkPlayer bootstrapPlayer)
-        {
-            var promise = bootstrapPlayer.StartYourEngines("Ping");
-            yield return promise;
-            if (promise.Fulfilled)
-            {
-                Debug.Log($"{promise.GetValue()}");
-            }
-            promise.Dispose();
         }
     }
 }

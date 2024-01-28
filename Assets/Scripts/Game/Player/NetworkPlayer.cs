@@ -49,5 +49,15 @@ namespace Game.Player
             Debug.Log($"{start}");
             promise.Fulfill("Pong");
         }
+
+        protected override IEnumerator StartServer()
+        {
+            yield return null;
+        }
+
+        protected override IEnumerator StartClient()
+        {
+            yield return null;
+        }
     }
 }
