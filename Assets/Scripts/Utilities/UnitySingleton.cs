@@ -2,11 +2,17 @@
 
 namespace NetLib.Utility
 {
-    public class UnitySingleton<T> : MonoBehaviour
+    public class UnitySingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static T _instance;
         public static T Instance => _instance;
         protected virtual bool DoneDestroyOnLoad => false;
+
+        protected void Reset()
+        {
+            Destroy(this);
+            _instance = null;
+        }
 
         private void Awake()
         {
