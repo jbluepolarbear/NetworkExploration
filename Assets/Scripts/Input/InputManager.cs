@@ -18,7 +18,7 @@ namespace Input
 
         private void Update()
         {
-            InputState = new InputState { LeftAxis = Vector2.up };
+            InputState = new InputState { LeftAxis = Vector2.zero };
         }
         
         public InputState InputState { get; private set; }

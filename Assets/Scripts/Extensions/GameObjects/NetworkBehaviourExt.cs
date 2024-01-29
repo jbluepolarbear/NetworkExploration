@@ -85,7 +85,7 @@ namespace Extensions.GameObjects
             }
         }
 
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void SendMessageServerRpc(uint target, uint messageId, RpcMessage data, ServerRpcParams rpcParams = default)
         {
             var methodInfo = asyncServerRpcTargets[target];
@@ -188,7 +188,8 @@ namespace Extensions.GameObjects
             SendResponseServerRpc(promise.MessageId, data);
         }
 
-        [ServerRpc]
+        
+        [ServerRpc(RequireOwnership = false)]
         public void SendResponseServerRpc(uint messageId, RpcMessage data)
         {
             var promise = promises[messageId];

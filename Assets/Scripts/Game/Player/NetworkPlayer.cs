@@ -14,16 +14,15 @@ namespace Game.Player
 {
     public class NetworkPlayer : NetworkBehaviourExt, IMovable
     {
+        private Vector3 _velocity;
+        private Vector3 _angularVelocity;
         private Rigidbody _rigidbody;
-        private NetworkPlayerPrediction _playerPrediction;
         public float Speed = 5.0f;
         public float Acceleration = 50.0f;
 
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            _playerPrediction = GetComponent<NetworkPlayerPrediction>();
-            _playerPrediction.Movable = this;
         }
         
         public bool Active =>
@@ -43,16 +42,31 @@ namespace Game.Player
         
         public Vector3 Velocity
         {
-            get => _rigidbody.velocity;
-            set => _rigidbody.velocity = value;
+            get => _velocity;
+            set => _velocity = value;
         }
         
         public Vector3 AngularVelocity
         {
-            get => _rigidbody.angularVelocity;
-            set => _rigidbody.angularVelocity = value;
+            get => _angularVelocity;
+            set => _angularVelocity = value;
         }
-        
+
+        protected override void NetworkFixedUpdate()
+        {
+            if (!IsOwner)
+            {
+                return;
+            }
+            
+            if (!Active)
+            {
+                return;
+            }
+            
+            ProcessInput(ClientContext.Get<InputManager>().InputState);
+        }
+
         public void ProcessInput(InputState inputState)
         {
             // Z positive it up can X positive is right
