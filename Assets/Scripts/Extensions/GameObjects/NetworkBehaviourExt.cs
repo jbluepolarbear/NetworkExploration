@@ -48,7 +48,21 @@ namespace Extensions.GameObjects
                 asyncClientRpcTargets.Add(attribute.Target, method);
             }
         }
-        
+
+        protected virtual void NetworkFixedUpdate()
+        {
+            
+        }
+
+        private void FixedUpdate()
+        {
+            if (_started)
+            {
+                NetworkFixedUpdate();
+            }
+        }
+
+        protected bool _started;
         protected abstract IEnumerator StartServer();
         protected abstract IEnumerator StartClient();
         public override void OnNetworkSpawn()
@@ -62,10 +76,12 @@ namespace Extensions.GameObjects
             if (IsServer)
             {
                 yield return StartServer();
+                _started = true;
             }
             if (IsClient)
             {
                 yield return StartClient();
+                _started = true;
             }
         }
 

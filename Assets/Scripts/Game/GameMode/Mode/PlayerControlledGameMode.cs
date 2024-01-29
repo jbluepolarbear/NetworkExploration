@@ -6,7 +6,7 @@ namespace Game.GameMode.Mode
     public class PlayerControlledGameMode : IGameMode
     {
         public ulong ClientId { get; set; }
-        public GameMode GameMode { get; }
+        public GameMode GameMode => GameMode.PlayerControlled;
         public IEnumerator EnterGameMode()
         {
             yield return null;

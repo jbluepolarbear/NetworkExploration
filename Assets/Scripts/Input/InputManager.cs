@@ -1,0 +1,26 @@
+﻿using System.Collections;
+using Contexts;
+using UnityEngine;
+
+namespace Input
+{
+    public class InputManager : ContextProvider<InputManager>, IClientContextProvider
+    {
+        protected override IEnumerator StartServer()
+        {
+            yield return null;
+        }
+
+        protected override IEnumerator StartClient()
+        {
+            yield return null;
+        }
+
+        private void Update()
+        {
+            InputState = new InputState { LeftAxis = Vector2.up };
+        }
+        
+        public InputState InputState { get; private set; }
+    }
+}
