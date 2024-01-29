@@ -18,6 +18,10 @@ namespace Contexts
         
         public static T Get<T>() where T : class, IContextProvider
         {
+            if (Instance == null)
+            {
+                return null;
+            }
             if (!Has<T>())
             {
                 Debug.LogWarning($"IContextProvider for type {typeof(T).Name} was not found in the registry.");
@@ -28,6 +32,10 @@ namespace Contexts
         
         public static bool Has<T>() where T : IContextProvider
         {
+            if (Instance == null)
+            {
+                return false;
+            }
             return Instance._contextProviders.ContainsKey(typeof(T));
         }
 
@@ -46,13 +54,13 @@ namespace Contexts
 #if UNITY_EDITOR
             Instance._contextProvidersInChildren = Instance._contextProviders.Select(pair => (IContextProvider) pair.Value).ToArray();
 #endif
-            Instance.Reset();
+            Instance.ResetInstance();
         }
 
         protected abstract Type ContextProviderType { get; }
         private void RegisterContextProviders()
         {
-            IContextProvider[] contextProviders = (IContextProvider[]) GetComponentsInChildren(ContextProviderType);
+            IContextProvider[] contextProviders = GetComponentsInChildren(ContextProviderType).Cast<IContextProvider>().ToArray();
             foreach (IContextProvider contextProvider in contextProviders)
             {
                 RegisterProvider(contextProvider);

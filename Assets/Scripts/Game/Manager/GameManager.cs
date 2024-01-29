@@ -22,12 +22,14 @@ namespace Game.Manager
         
         protected override IEnumerator StartServer()
         {
+            ServerContext.Initialize();
             IsReady();
             yield return null;
         }
 
         protected override IEnumerator StartClient()
         {
+            ClientContext.Initialize();
             IsReady();
             yield return null;
         }

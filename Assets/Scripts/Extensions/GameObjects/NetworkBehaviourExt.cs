@@ -54,13 +54,18 @@ namespace Extensions.GameObjects
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            StartCoroutine(StartRoutine());
+        }
+
+        public IEnumerator StartRoutine()
+        {
             if (IsServer)
             {
-                StartCoroutine(StartServer());
+                yield return StartServer();
             }
-            else
+            if (IsClient)
             {
-                StartCoroutine(StartClient());
+                yield return StartClient();
             }
         }
 
@@ -75,8 +80,14 @@ namespace Extensions.GameObjects
             var promise = Activator.CreateInstance(promiseType, messageId);
             // do something with promise
             StartCoroutine(WaitForResponseServer((RpcPromise) promise, rpcParams.Receive.SenderClientId));
-            var inParameters = data.Args.Append(promise).ToArray();
-            StartCoroutine((IEnumerator) methodInfo.Invoke(this, inParameters));
+            var inParameters = new List<object>();
+            if (data.Args != null)
+            {
+                inParameters.AddRange(data.Args);
+            }
+            inParameters.Add(rpcParams.Receive.SenderClientId);
+            inParameters.Add(promise);
+            StartCoroutine((IEnumerator) methodInfo.Invoke(this, inParameters.ToArray()));
         }
 
         private IEnumerator WaitForResponseServer(RpcPromise promise, ulong clientId)
@@ -132,8 +143,13 @@ namespace Extensions.GameObjects
             var promise = Activator.CreateInstance(promiseType, messageId);
             // do something with promise
             StartCoroutine(WaitForResponseClient((RpcPromise) promise));
-            var inParameters = data.Args.Append(promise).ToArray();
-            StartCoroutine((IEnumerator) methodInfo.Invoke(this, inParameters));
+            var inParameters = new List<object>();
+            if (data.Args != null)
+            {
+                inParameters.AddRange(data.Args);
+            }
+            inParameters.Add(promise);
+            StartCoroutine((IEnumerator) methodInfo.Invoke(this, inParameters.ToArray()));
         }
 
         private IEnumerator WaitForResponseClient(RpcPromise promise)
@@ -233,47 +249,47 @@ namespace Extensions.GameObjects
         
         // Rpc Helpers
         // Server
-        public RpcPromise CallOnServer(Func<RpcPromise, IEnumerator> method)
+        public RpcPromise CallOnServer(Func<ulong, RpcPromise, IEnumerator> method)
         {
             return CallOnServer(method.Method);
         }
 
-        public RpcPromise CallOnServer<T>(Func<T, RpcPromise, IEnumerator> method, T arg1)
+        public RpcPromise CallOnServer<T>(Func<T, ulong, RpcPromise, IEnumerator> method, T arg1)
         {
             return CallOnServer(method.Method, arg1);
         }
 
-        public RpcPromise CallOnServer<T, T2, TR>(Func<T, T2, RpcPromise, IEnumerator> method, T arg1, T2 arg2)
+        public RpcPromise CallOnServer<T, T2, TR>(Func<T, T2, ulong, RpcPromise, IEnumerator> method, T arg1, T2 arg2)
         {
             return CallOnServer(method.Method, arg1, arg2);
         }
 
-        public RpcPromise CallOnServer<T, T2, T3>(Func<T, T2, T3, RpcPromise, IEnumerator> method, T arg1, T2 arg2, T3 arg3)
+        public RpcPromise CallOnServer<T, T2, T3>(Func<T, T2, T3, ulong, RpcPromise, IEnumerator> method, T arg1, T2 arg2, T3 arg3)
         {
             return CallOnServer(method.Method, arg1, arg2, arg3);
         }
 
-        public RpcPromise CallOnServer<T, T2, T3, T4>(Func<T, T2, T3, T4, RpcPromise, IEnumerator> method, T arg1, T2 arg2, T3 arg3, T4 arg4)
+        public RpcPromise CallOnServer<T, T2, T3, T4>(Func<T, T2, T3, T4, ulong, RpcPromise, IEnumerator> method, T arg1, T2 arg2, T3 arg3, T4 arg4)
         {
             return CallOnServer(method.Method, arg1, arg2, arg3, arg4);
         }
 
-        public RpcPromise<TR> CallOnServer<T, TR>(Func<T, RpcPromise<TR>, IEnumerator> method, T arg1)
+        public RpcPromise<TR> CallOnServer<T, TR>(Func<T, ulong, RpcPromise<TR>, IEnumerator> method, T arg1)
         {
             return CallOnServer<TR>(method.Method, arg1);
         }
 
-        public RpcPromise<TR> CallOnServer<T, T2, TR>(Func<T, T2, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2)
+        public RpcPromise<TR> CallOnServer<T, T2, TR>(Func<T, T2, ulong, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2)
         {
             return CallOnServer<TR>(method.Method, arg1, arg2);
         }
 
-        public RpcPromise<TR> CallOnServer<T, T2, T3, TR>(Func<T, T2, T3, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2, T3 arg3)
+        public RpcPromise<TR> CallOnServer<T, T2, T3, TR>(Func<T, T2, T3, ulong, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2, T3 arg3)
         {
             return CallOnServer<TR>(method.Method, arg1, arg2, arg3);
         }
 
-        public RpcPromise<TR> CallOnServer<T, T2, T3, T4, TR>(Func<T, T2, T3, T4, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2, T3 arg3, T4 arg4)
+        public RpcPromise<TR> CallOnServer<T, T2, T3, T4, TR>(Func<T, T2, T3, T4, ulong, RpcPromise<TR>, IEnumerator> method, T arg1, T2 arg2, T3 arg3, T4 arg4)
         {
             return CallOnServer<TR>(method.Method, arg1, arg2, arg3, arg4);
         }

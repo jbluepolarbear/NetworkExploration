@@ -5,8 +5,11 @@ namespace Extensions.GameObjects.Rpc
 {
     public enum SerializationTypes
     {
+        Enum,
         Int,
         UInt,
+        Long,
+        ULong,
         Bool,
         Float,
         Double,
@@ -20,6 +23,10 @@ namespace Extensions.GameObjects.Rpc
             var writer = bufferSerializer.GetFastBufferWriter();
             switch (field)
             {
+                case Enum enumField:
+                    writer.WriteValueSafe(SerializationTypes.Enum);
+                    writer.WriteValueSafe(Convert.ToInt32(enumField));
+                    break;
                 case int intField:
                     writer.WriteValueSafe(SerializationTypes.Int);
                     writer.WriteValueSafe(intField);
@@ -27,6 +34,14 @@ namespace Extensions.GameObjects.Rpc
                 case uint uintField:
                     writer.WriteValueSafe(SerializationTypes.UInt);
                     writer.WriteValueSafe(uintField);
+                    break;
+                case long longField:
+                    writer.WriteValueSafe(SerializationTypes.UInt);
+                    writer.WriteValueSafe(longField);
+                    break;
+                case ulong ulongField:
+                    writer.WriteValueSafe(SerializationTypes.UInt);
+                    writer.WriteValueSafe(ulongField);
                     break;
                 case bool boolField:
                     writer.WriteValueSafe(SerializationTypes.Bool);
@@ -56,12 +71,21 @@ namespace Extensions.GameObjects.Rpc
             reader.ReadValueSafe(out SerializationTypes serializationType);
             switch (serializationType)
             {
+                case SerializationTypes.Enum:
+                    reader.ReadValueSafe(out int enumValue);
+                    return enumValue;
                 case SerializationTypes.Int:
                     reader.ReadValueSafe(out int intField);
                     return intField;
                 case SerializationTypes.UInt:
                     reader.ReadValueSafe(out uint uintField);
                     return uintField;
+                case SerializationTypes.Long:
+                    reader.ReadValueSafe(out long longField);
+                    return longField;
+                case SerializationTypes.ULong:
+                    reader.ReadValueSafe(out ulong ulongField);
+                    return ulongField;
                 case SerializationTypes.Bool:
                     reader.ReadValueSafe(out bool boolField);
                     return boolField;

@@ -20,11 +20,17 @@ namespace Extensions.GameObjects.Rpc
                     return;
                 }
                 writer.WriteValueSafe(false);
-                Assert.NotNull(Args);
-                writer.WriteValueSafe(Args.Length);
-                foreach (var arg in Args)
+                if (Args != null)
                 {
-                    Serialization.SerializeField(arg, serializer);
+                    writer.WriteValueSafe(Args.Length);
+                    foreach (var arg in Args)
+                    {
+                        Serialization.SerializeField(arg, serializer);
+                    }
+                }
+                else
+                {
+                    writer.WriteValueSafe(0);
                 }
             }
             else
@@ -43,10 +49,13 @@ namespace Extensions.GameObjects.Rpc
                     return;
                 }
                 reader.ReadValueSafe(out int length);
-                Args = new object[length];
-                for (var i = 0; i < length; ++i)
+                if (length > 0)
                 {
-                    Args[i] = Serialization.DeserializeField(serializer);
+                    Args = new object[length];
+                    for (var i = 0; i < length; ++i)
+                    {
+                        Args[i] = Serialization.DeserializeField(serializer);
+                    }
                 }
             }
         }

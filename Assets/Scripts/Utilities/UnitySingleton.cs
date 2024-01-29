@@ -8,7 +8,7 @@ namespace NetLib.Utility
         public static T Instance => _instance;
         protected virtual bool DoneDestroyOnLoad => false;
 
-        protected void Reset()
+        protected void ResetInstance()
         {
             Destroy(this);
             _instance = null;

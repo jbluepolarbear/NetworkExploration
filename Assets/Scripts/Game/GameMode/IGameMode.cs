@@ -3,10 +3,17 @@ using Input;
 
 namespace Game.GameMode
 {
+    public enum GameMode
+    {
+        None,
+        PlayerControlled,
+    }
     public interface IGameMode
     {
+        ulong ClientId { get; set; }
+        GameMode GameMode { get; }
         IEnumerator EnterGameMode();
-        void UpdateGameMode(IInputState inputState); 
+        void UpdateGameMode(); 
         IEnumerator ExitGameMode();
     }
 }

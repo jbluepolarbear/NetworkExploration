@@ -1,7 +1,10 @@
 ﻿using System.Collections;
+using Contexts;
 using Extensions;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
+using Game.GameMode;
+using Game.Manager;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -37,7 +40,7 @@ namespace Game.Player
         }
 
         [RpcTargetServer(1)]
-        public IEnumerator StartYourEnginesServerRoutine(string start, RpcPromise<string> promise)
+        public IEnumerator StartYourEnginesServerRoutine(string start, ulong clientId, RpcPromise<string> promise)
         {
             var i = 0;
             while (i < 10)
@@ -57,6 +60,11 @@ namespace Game.Player
 
         protected override IEnumerator StartClient()
         {
+            while (!ClientContext.Has<GameManager>())
+            {
+                yield return null;
+            }
+            yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameMode.PlayerControlled);
             yield return null;
         }
     }
