@@ -131,10 +131,7 @@ namespace Game.Player
 
         protected override IEnumerator StartClient()
         {
-            while (!ClientContext.Has<GameManager>())
-            {
-                yield return null;
-            }
+            yield return new WaitForGameManager();
             
             if (!IsOwner)
             {
