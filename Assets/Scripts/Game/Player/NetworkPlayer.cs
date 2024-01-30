@@ -8,6 +8,7 @@ using Game.Manager;
 using Input;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Utilities;
 
 namespace Game.Player
@@ -19,10 +20,23 @@ namespace Game.Player
         private Rigidbody _rigidbody;
         public float Speed = 5.0f;
         public float Acceleration = 50.0f;
+        private Controls _controls;
+        public float Drag = 0.95f;
 
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _controls = new Controls();
+        }
+
+        public void OnEnable()
+        {
+            _controls.Enable();
+        }
+
+        public void OnDisable()
+        {
+            _controls.Disable();
         }
         
         public bool Active =>
@@ -64,7 +78,10 @@ namespace Game.Player
                 return;
             }
             
-            ProcessInput(ClientContext.Get<InputManager>().InputState);
+            ProcessInput(new InputState
+            {
+                LeftAxis = _controls.PlayerControlled.Move.ReadValue<Vector2>()
+            });
         }
 
         public void ProcessInput(InputState inputState)
@@ -77,13 +94,13 @@ namespace Game.Player
                 Velocity = Velocity.normalized * Speed;
             }
 
-            Velocity *= 0.95f;
+            Position += Velocity * Time.fixedDeltaTime;
+
+            Velocity *= Drag;
             if (Velocity.magnitude <= Math.Epsilon)
             {
                 Velocity = Vector3.zero;
             }
-
-            Position += Velocity * Time.fixedDeltaTime;
         }
 
         private static Vector3 GetRandomPositionOnXYPlane()
