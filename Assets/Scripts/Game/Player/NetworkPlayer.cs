@@ -1,14 +1,11 @@
 ﻿using System.Collections;
 using Contexts;
-using Extensions;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
 using Game.GameMode;
 using Game.Manager;
 using Input;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Utilities;
 
 namespace Game.Player
@@ -138,6 +135,13 @@ namespace Game.Player
             {
                 yield return null;
             }
+            
+            if (!IsOwner)
+            {
+                yield break;
+            }
+
+            CameraProvider.Instance.ActiveCamera.Follow = transform;
             yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameMode.PlayerControlled);
             yield return null;
         }
