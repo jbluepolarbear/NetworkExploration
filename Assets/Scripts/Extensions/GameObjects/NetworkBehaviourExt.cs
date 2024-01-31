@@ -291,6 +291,11 @@ namespace Extensions.GameObjects
             return CallOnServer(method.Method, arg1, arg2, arg3, arg4);
         }
 
+        public RpcPromise<TR> CallOnServer<TR>(Func<ulong, RpcPromise<TR>, IEnumerator> method)
+        {
+            return CallOnServer<TR>(method.Method);
+        }
+
         public RpcPromise<TR> CallOnServer<T, TR>(Func<T, ulong, RpcPromise<TR>, IEnumerator> method, T arg1)
         {
             return CallOnServer<TR>(method.Method, arg1);
@@ -335,6 +340,11 @@ namespace Extensions.GameObjects
         public RpcPromise CallOnClient<T, T2, T3, T4>(Func<T, T2, T3, T4, RpcPromise, IEnumerator> method, ulong clientId, T arg1, T2 arg2, T3 arg3, T4 arg4)
         {
             return CallOnClient(method.Method, clientId, arg1, arg2, arg3, arg4);
+        }
+
+        public RpcPromise<TR> CallOnClient<TR>(Func<RpcPromise<TR>, IEnumerator> method, ulong clientId)
+        {
+            return CallOnClient<TR>(method.Method, clientId);
         }
 
         public RpcPromise<TR> CallOnClient<T, TR>(Func<T, RpcPromise<TR>, IEnumerator> method, ulong clientId, T arg1)

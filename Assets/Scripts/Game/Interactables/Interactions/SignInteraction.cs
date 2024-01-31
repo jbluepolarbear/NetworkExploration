@@ -29,7 +29,7 @@ namespace Game.Interactables.Interactions
                 yield break;
             }
             
-            var rpcPromise = CallOnServer(ExecuteServerRoutine);
+            var rpcPromise = CallOnServer<string>(ExecuteServerRoutine);
             yield return rpcPromise;
             if (rpcPromise.Error != null)
             {
@@ -40,6 +40,8 @@ namespace Game.Interactables.Interactions
                 });
                 yield break;
             }
+            
+            Debug.Log($"Sign Interaction: {rpcPromise.Value}");
             
             gameModeRpcPromise = gameModeManager
                 .SetGameModeServer(previousGameMode);
@@ -58,11 +60,10 @@ namespace Game.Interactables.Interactions
         }
         
         [RpcTargetServer(1)]
-        public IEnumerator ExecuteServerRoutine(ulong clientId, RpcPromise promise)
+        public IEnumerator ExecuteServerRoutine(ulong clientId, RpcPromise<string> promise)
         {
-            Debug.Log("Sign Interaction");
-            yield return new WaitForSeconds(1);
-            promise.Fulfill();
+            promise.Fulfill("Sign Interaction From Server");
+            yield break;
         }
 
         public InteractionType _interactionType = InteractionType.Action;
