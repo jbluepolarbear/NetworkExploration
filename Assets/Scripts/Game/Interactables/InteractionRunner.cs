@@ -24,13 +24,13 @@ namespace Game.Interactables
         
         protected override IEnumerator StartServer()
         {
-            yield return new WaitForGameManager();
+            yield return new WaitForGameManagerServer();
             _interactable.Value = true;
         }
 
         protected override IEnumerator StartClient()
         {
-            yield return new WaitForGameManager();
+            yield return new WaitForGameManagerClient();
         }
 
         public Vector3 Position => transform.position;

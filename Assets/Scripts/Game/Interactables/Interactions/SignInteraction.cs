@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Contexts;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
+using Game.GameMode;
 using Unity.Netcode;
 using UnityEngine;
 using Utilities;
@@ -12,8 +14,46 @@ namespace Game.Interactables.Interactions
     {
         private IEnumerator RunInteractionCoroutine(Promise<IInteractionResult> promise)
         {
+            var gameModeManager = ClientContext.Get<GameModeManager>();
+            var previousGameMode = gameModeManager.GetActiveGameMode;
+            var gameModeRpcPromise = gameModeManager
+                .SetGameModeServer(GameMode.GameMode.PausedInteraction);
+            yield return gameModeRpcPromise;
+            if (gameModeRpcPromise.Error != null)
+            {
+                promise.FillError(new PromiseError
+                {
+                    Code = PromiseErrorCodes.RpcError,
+                    Reason = $"Code: {gameModeRpcPromise.Error.Code}, Reason: {gameModeRpcPromise.Error.Reason}"
+                });
+                yield break;
+            }
+            
             var rpcPromise = CallOnServer(ExecuteServerRoutine);
             yield return rpcPromise;
+            if (rpcPromise.Error != null)
+            {
+                promise.FillError(new PromiseError
+                {
+                    Code = PromiseErrorCodes.RpcError,
+                    Reason = $"Code: {rpcPromise.Error.Code}, Reason: {rpcPromise.Error.Reason}"
+                });
+                yield break;
+            }
+            
+            gameModeRpcPromise = gameModeManager
+                .SetGameModeServer(previousGameMode);
+            yield return gameModeRpcPromise;
+            if (gameModeRpcPromise.Error != null)
+            {
+                promise.FillError(new PromiseError
+                {
+                    Code = PromiseErrorCodes.RpcError,
+                    Reason = $"Code: {gameModeRpcPromise.Error.Code}, Reason: {gameModeRpcPromise.Error.Reason}"
+                });
+                yield break;
+            }
+            
             promise.Fulfill();
         }
         

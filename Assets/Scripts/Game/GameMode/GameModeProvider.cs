@@ -11,8 +11,10 @@ namespace Game.GameMode
             {
                 case GameMode.PlayerControlled:
                     return new PlayerControlledGameMode();
+                case GameMode.PausedInteraction:
+                    return new PausedInteractionGameMode();
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(gameMode), gameMode, null);
+                    throw new ArgumentOutOfRangeException(nameof(gameMode), gameMode, $"GameMode: {gameMode} not found.");
             }
         }
     }

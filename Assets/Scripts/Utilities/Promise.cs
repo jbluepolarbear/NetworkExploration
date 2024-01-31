@@ -8,6 +8,7 @@ namespace Utilities
         BadArgument,
         NotAllowed,
         NotFound,
+        RpcError,
     }
     
     public class PromiseError
@@ -28,13 +29,17 @@ namespace Utilities
         {
             Value = value;
             Fulfilled = true;
+            OnFulfilled?.Invoke();
         }
 
         public void FillError(PromiseError error)
         {
             Error = error;
             Fulfilled = true;
+            OnFulfilled?.Invoke();
         }
+        
+        public event Action OnFulfilled;
 
         public override bool keepWaiting => !Fulfilled && Error == null;
     }

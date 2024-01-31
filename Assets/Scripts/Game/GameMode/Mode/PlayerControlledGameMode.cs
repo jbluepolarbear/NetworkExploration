@@ -13,17 +13,19 @@ namespace Game.GameMode.Mode
         public GameModeManager GameModeManager { get; set; }
         public GameMode GameMode => GameMode.PlayerControlled;
         private NetworkPlayer _networkPlayer;
+        private NetworkPlayerInteractor _networkPlayerInteractor;
         public IEnumerator EnterGameMode()
         {
             if (!GameModeManager.IsClient)
             {
                 yield break;
             }
-            if (!GameModeManager.NetworkManager.ConnectedClients.TryGetValue(ClientId, out var networkClient))
+            if (GameModeManager.NetworkManager.LocalClient == null)
             {
                 yield break;
             }
-            _networkPlayer = networkClient.PlayerObject.GetComponent<NetworkPlayer>();
+            _networkPlayer = GameModeManager.NetworkManager.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
+            _networkPlayerInteractor = _networkPlayer.GetComponent<NetworkPlayerInteractor>();
             yield return null;
         }
 
@@ -34,19 +36,24 @@ namespace Game.GameMode.Mode
                 return;
             }
             
+            if (_networkPlayerInteractor.RunningInteraction)
+            {
+                MainHUD.Instance.ActionIcon.gameObject.SetActive(false);
+                return;
+            }
+            
             _networkPlayer.ProcessInput(new InputState
             {
                 LeftAxis = _networkPlayer.Controls.PlayerControlled.Move.ReadValue<Vector2>()
             });
 
-            var interactor = _networkPlayer.GetComponent<Interactor>();
-            if (interactor.Target != null && interactor.Target.Interactable)
+            if (_networkPlayerInteractor.CanRunInteraction)
             {
-                var hasInteraction = interactor.Target.HasInteraction(InteractionType.Action);
+                var hasInteraction = _networkPlayerInteractor.Target.HasInteraction(InteractionType.Action);
                 MainHUD.Instance.ActionIcon.gameObject.SetActive(hasInteraction);
                 if (hasInteraction && _networkPlayer.Controls.PlayerControlled.Action.triggered)
                 {
-                    interactor.Target.RunInteraction(InteractionType.Action);
+                    _networkPlayerInteractor.RunInteraction(InteractionType.Action);
                 }
             }
             else

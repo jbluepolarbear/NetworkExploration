@@ -29,12 +29,18 @@ namespace Game.Player
 
         public void OnEnable()
         {
-            _controls.Enable();
+            if (_controls != null)
+            {
+                _controls.Enable();
+            }
         }
 
         public void OnDisable()
         {
-            _controls.Disable();
+            if (_controls != null)
+            {
+                _controls.Disable();
+            }
         }
         
         public bool Active =>
@@ -127,7 +133,7 @@ namespace Game.Player
 
         protected override IEnumerator StartClient()
         {
-            yield return new WaitForGameManager();
+            yield return new WaitForGameManagerClient();
             
             if (!IsOwner)
             {

@@ -7,6 +7,7 @@ namespace Game.GameMode
     {
         None,
         PlayerControlled,
+        PausedInteraction, // This is a game mode to prevent the player from moving while interacting with an object
     }
     public interface IGameMode
     {

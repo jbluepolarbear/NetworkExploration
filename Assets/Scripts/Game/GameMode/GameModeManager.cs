@@ -63,7 +63,7 @@ namespace Game.GameMode
             promise.Fulfill();
         }
 
-        private void FixedUpdate()
+        protected override void NetworkFixedUpdate()
         {
             foreach (var gameMode in _gameModes)
             {
