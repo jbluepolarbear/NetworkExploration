@@ -11,6 +11,7 @@ namespace Game.GameMode
     public interface IGameMode
     {
         ulong ClientId { get; set; }
+        GameModeManager GameModeManager { get; set; }
         GameMode GameMode { get; }
         IEnumerator EnterGameMode();
         void UpdateGameMode(); 

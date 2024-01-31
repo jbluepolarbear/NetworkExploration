@@ -18,6 +18,7 @@ namespace Game.Player
         public float Speed = 5.0f;
         public float Acceleration = 50.0f;
         private Controls _controls;
+        public Controls Controls => _controls;
         public float Drag = 0.95f;
 
         private void Awake()
@@ -74,11 +75,6 @@ namespace Game.Player
             {
                 return;
             }
-            
-            ProcessInput(new InputState
-            {
-                LeftAxis = _controls.PlayerControlled.Move.ReadValue<Vector2>()
-            });
         }
 
         public void ProcessInput(InputState inputState)

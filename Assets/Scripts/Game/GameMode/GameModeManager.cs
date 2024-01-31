@@ -85,6 +85,7 @@ namespace Game.GameMode
         {
             var newGameMode = GameModeProvider.NewGameModeInstance(gameMode);
             newGameMode.ClientId = clientId;
+            newGameMode.GameModeManager = this;
             yield return newGameMode.EnterGameMode();
             _gameModes[clientId] = newGameMode;
             yield return null;

@@ -7,6 +7,7 @@ namespace Utilities
     {
         BadArgument,
         NotAllowed,
+        NotFound,
     }
     
     public class PromiseError
