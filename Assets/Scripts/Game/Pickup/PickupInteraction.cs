@@ -2,6 +2,7 @@
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
 using Game.Interactables;
+using Unity.Netcode;
 using UnityEngine;
 using Utilities;
 
@@ -9,6 +10,7 @@ namespace Game.Pickup
 {
     public class PickupInteraction : NetworkBehaviourExt, IInteraction
     {
+        public GameObject View;
         protected override IEnumerator StartServer()
         {
             yield return null;
@@ -23,35 +25,20 @@ namespace Game.Pickup
         public Promise<IInteractionResult> ExecuteClient()
         {
             var promise = new Promise<IInteractionResult>();
-            StartCoroutine(ExecuteClientRoutine(promise));
+            // using regular rpc for fire and forger
+            ExecuteServerRpc();
+            
+            View.SetActive(false);
+            
+            promise.Fulfill();
             return promise;
         }
         
-        [RpcTargetServer(1)]
-        public IEnumerator ExecuteServerRoutine(ulong clientId, RpcPromise promise)
+        [ServerRpc(RequireOwnership = false)]
+        public void ExecuteServerRpc(ServerRpcParams serverRpcParams = default)
         {
             Debug.Log($"Picked up {gameObject.name}");
-            promise.Fulfill();
-            yield return new WaitForSeconds(1);
             NetworkObject.Despawn(true);
-        }
-
-        public IEnumerator ExecuteClientRoutine(Promise<IInteractionResult> promise)
-        {
-            var rpcPromise = CallOnServer(ExecuteServerRoutine);
-            yield return rpcPromise;
-            if (rpcPromise.Error != null)
-            {
-                promise.FillError(new PromiseError
-                {
-                    Code = PromiseErrorCodes.RpcError,
-                    Reason = $"Code: {rpcPromise.Error.Code}, Reason: {rpcPromise.Error.Reason}"
-                });
-            }
-            else
-            {
-                promise.Fulfill();
-            }
         }
     }
 }
