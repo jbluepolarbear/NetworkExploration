@@ -16,6 +16,7 @@ namespace Game.Player
         private Vector3 _angularVelocity;
         private Rigidbody _rigidbody;
         public float Speed = 5.0f;
+        public float TurnSpeed = 5.0f;
         public float Acceleration = 50.0f;
         private Controls _controls;
         public Controls Controls => _controls;
@@ -24,6 +25,7 @@ namespace Game.Player
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _rigidbody.isKinematic = true;
             _controls = new Controls();
         }
 
@@ -83,6 +85,7 @@ namespace Game.Player
             }
         }
 
+        private Vector3 _lastDirection;
         public void ProcessInput(InputState inputState)
         {
             // Z positive it up can X positive is right
@@ -100,6 +103,14 @@ namespace Game.Player
             {
                 Velocity = Vector3.zero;
             }
+            var direction = new Vector3(inputState.LeftAxis.x, 0.0f, inputState.LeftAxis.y).normalized;
+
+            if (direction.magnitude > Math.Epsilon)
+            {
+                _lastDirection = direction;
+            }
+
+            Rotation = Quaternion.Slerp(Rotation, Quaternion.LookRotation(_lastDirection, Vector3.up), Time.fixedDeltaTime * TurnSpeed);
         }
 
         private static Vector3 GetRandomPositionOnXYPlane()
