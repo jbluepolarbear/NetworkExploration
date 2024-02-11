@@ -155,6 +155,7 @@ GameObject:
   - component: {fileID: 2129311023379505346}
   - component: {fileID: 7190317813226593388}
   - component: {fileID: 8429871250027582816}
+  - component: {fileID: -1481377255165996553}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -190,7 +191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1850037639
+  GlobalObjectIdHash: 1556814513
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -211,6 +212,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 5
+  TurnSpeed: 5
   Acceleration: 50
   Drag: 0.95
 --- !u!54 &5607050815245525834
@@ -292,6 +294,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b62e249d1714a7188c8d5f7a52fc3b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-1481377255165996553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5637300993643600950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d992e40b1c0e46f0a53a16cf9931cec6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &6450394519362328441

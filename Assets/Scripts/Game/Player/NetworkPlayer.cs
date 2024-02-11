@@ -85,7 +85,7 @@ namespace Game.Player
             }
         }
 
-        private Vector3 _lastDirection;
+        private Vector3 _lastDirection = Vector3.forward;
         public void ProcessInput(InputState inputState)
         {
             // Z positive it up can X positive is right
