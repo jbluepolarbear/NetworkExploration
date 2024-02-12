@@ -42,7 +42,7 @@ namespace Game.Player.UserState
             }, UserStateType.Player);
             yield return promise;
             _playerUserState = promise.GetValue();
-            _inventory = _playerUserState.GetOrMakeUserStateEntryForOwnerId<UserStateInventory>(0);
+            _inventory = _playerUserState.GetOrMakeSingleUserStateEntry<UserStateInventory>();
             _lastSaveTime = Time.time;
         }
 
