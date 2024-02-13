@@ -87,22 +87,23 @@ namespace Game.Player
         private Vector3 _lastDirection = Vector3.forward;
         public void ProcessInput(InputState inputState)
         {
-            // Z positive it up can X positive is right
-            var acceleration = new Vector3(inputState.LeftAxis.x, 0.0f, inputState.LeftAxis.y) * Acceleration;
-            Velocity += acceleration * Time.fixedDeltaTime;
-            if (Velocity.magnitude > Speed)
-            {
-                Velocity = Velocity.normalized * Speed;
-            }
-
-            Position += Velocity * Time.fixedDeltaTime;
-
-            Velocity *= Drag;
-            if (Velocity.magnitude <= Math.Epsilon)
-            {
-                Velocity = Vector3.zero;
-            }
             var direction = new Vector3(inputState.LeftAxis.x, 0.0f, inputState.LeftAxis.y).normalized;
+            // Z positive it up can X positive is right
+            var acceleration = direction * Acceleration;
+            _rigidbody.AddForce(acceleration * Time.fixedDeltaTime);
+            // Velocity += acceleration * Time.fixedDeltaTime;
+            if (_rigidbody.velocity.magnitude > Speed)
+            {
+                _rigidbody.velocity = _rigidbody.velocity * Speed;
+            }
+            //
+            // Position += Velocity * Time.fixedDeltaTime;
+            //
+            _rigidbody.velocity *= Drag;
+            if (_rigidbody.velocity.magnitude <= Math.Epsilon)
+            {
+                _rigidbody.velocity = Vector3.zero;
+            }
 
             if (direction.magnitude > Math.Epsilon)
             {
@@ -149,8 +150,6 @@ namespace Game.Player
             {
                 yield break;
             }
-            
-            _rigidbody.isKinematic = true;
 
             CameraProvider.Instance.ActiveCamera.Follow = transform;
             yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameMode.PlayerControlled);
