@@ -25,7 +25,6 @@ namespace Game.Player
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            _rigidbody.isKinematic = true;
             _controls = new Controls();
         }
 
@@ -150,6 +149,8 @@ namespace Game.Player
             {
                 yield break;
             }
+            
+            _rigidbody.isKinematic = true;
 
             CameraProvider.Instance.ActiveCamera.Follow = transform;
             yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameMode.PlayerControlled);

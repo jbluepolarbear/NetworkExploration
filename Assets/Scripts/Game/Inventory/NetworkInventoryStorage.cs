@@ -17,6 +17,7 @@ namespace Game.Inventory
         private UserStateInventory _inventory;
         private UserStateInventory Inventory => _inventory;
         public bool ClientSynced => !_serverHasSync && _syncCoroutine == null;
+        public bool AutoSync { get; set; } = false;
         protected override IEnumerator StartServer()
         {
             _inventory = GetInventory();
@@ -43,6 +44,11 @@ namespace Game.Inventory
             {
                 _clientNeedsSync = false;
                 NeedsSyncClientRpc();
+            }
+            
+            if (AutoSync && IsClient && !ClientSynced)
+            {
+                SyncClient();
             }
         }
 

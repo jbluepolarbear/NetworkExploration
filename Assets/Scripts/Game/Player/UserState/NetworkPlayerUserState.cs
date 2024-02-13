@@ -4,14 +4,14 @@ using Contexts;
 using Extensions.GameObjects;
 using Game.Inventory;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UserState;
 
 namespace Game.Player.UserState
 {
     public class NetworkPlayerUserState : NetworkBehaviourExt
     {
-        private UserStateStorage _playerUserState;
-        private UserStateInventory _inventory;
+        public UserStateStorage PlayerUserState { get; private set; }
         
         protected override IEnumerator StartServer()
         {
@@ -25,14 +25,14 @@ namespace Game.Player.UserState
                 Id = SystemInfo.deviceName
             }, UserStateType.Player))
             {
-                _playerUserState = new UserStateStorage
+                PlayerUserState = new UserStateStorage
                 {
                     Version = Application.version
                 };
                 yield return ServerContext.Get<UserStateProvider>().SetUserState(new UserStateId
                 {
                     Id = SystemInfo.deviceName
-                }, _playerUserState, UserStateType.Player);
+                }, PlayerUserState, UserStateType.Player);
                 yield break;
             }
             
@@ -41,8 +41,7 @@ namespace Game.Player.UserState
                 Id = SystemInfo.deviceName
             }, UserStateType.Player);
             yield return promise;
-            _playerUserState = promise.GetValue();
-            _inventory = _playerUserState.GetOrMakeSingleUserStateEntry<UserStateInventory>();
+            PlayerUserState = promise.GetValue();
             _lastSaveTime = Time.time;
         }
 
@@ -62,7 +61,7 @@ namespace Game.Player.UserState
                 ServerContext.Get<UserStateProvider>().SetUserState(new UserStateId
                 {
                     Id = SystemInfo.deviceName
-                }, _playerUserState, UserStateType.Player);
+                }, PlayerUserState, UserStateType.Player);
             }
         }
     }
