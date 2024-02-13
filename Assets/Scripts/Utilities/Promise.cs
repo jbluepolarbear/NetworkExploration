@@ -20,6 +20,8 @@ namespace Utilities
     
     public class Promise: CustomYieldInstruction
     {
+        public static Promise FullfilledPromise => new Promise {Fulfilled = true};
+        
         public bool Fulfilled { get; protected set; }
         public object Value { get; protected set; }
         public PromiseError Error { get; protected set; }

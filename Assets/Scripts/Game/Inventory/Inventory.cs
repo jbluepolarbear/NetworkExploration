@@ -17,14 +17,62 @@ namespace Game.Inventory
         public int Quantity;
     }
     
-    [Serializable]
-    public class Inventory
+    public interface IInventory
     {
-        private int _inventoryId = 0;
+        IReadOnlyList<InventoryItemStack> Items { get; }
+        int Count { get; }
+        bool HasItemId(int itemId);
+        int GetQuantity(int itemId);
+        void AddQuantity(int itemId, int quantity);
+        void AddQuantityToStack(int itemId, int quantity, int inventoryId = -1);
+        void SubtractQuantity(int itemId, int quantity);
+        void SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1);
+        IEnumerable<InventoryItemStack> GetItemStacks(int itemId);
+        void SplitStack(int inventoryId, int quantity);
+        void MergeStacks(int inventoryId1, int inventoryId2);
+    }
+    
+    [Serializable]
+    public class Inventory : IInventory
+    {
+        private int _inventoryId = 1;
         private List<InventoryItemStack> _items = new ();
         public IReadOnlyList<InventoryItemStack> Items => _items;
         public int Count => _items.Count;
         public bool HasItemId(int itemId) => _items.Exists(item => item.ItemId == itemId);
+        
+        public void SetQuantityOfStack(int itemId, int quantity, int inventoryId = -1)
+        {
+            if (quantity <= 0)
+            {
+                return;
+            }
+
+            if (inventoryId == -1)
+            {
+                AddQuantity(itemId, quantity);
+                return;
+            }
+            
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var inventoryItem = _items[i];
+                if (inventoryItem.InventoryId != inventoryId)
+                {
+                    continue;
+                }
+                inventoryItem.Quantity = quantity;
+                _items[i] = inventoryItem;
+                return;
+            }
+            
+            _items.Add(new InventoryItemStack
+            {
+                ItemId = itemId,
+                InventoryId = inventoryId,
+                Quantity = quantity
+            });
+        }
 
         public int GetQuantity(int itemId)
         {
@@ -33,6 +81,8 @@ namespace Game.Inventory
         
         public void AddQuantity(int itemId, int quantity)
         {
+            Assert.True(itemId > 0);
+            
             if (quantity <= 0)
             {
                 return;
