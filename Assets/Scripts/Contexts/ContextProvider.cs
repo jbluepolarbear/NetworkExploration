@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using Extensions.GameObjects;
-using UnityEngine;
 
 namespace Contexts
 {

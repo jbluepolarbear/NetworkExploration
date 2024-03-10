@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using Contexts;
+﻿using Contexts;
 using Data;
 using Unity.Netcode;
 using UnityEngine;
-using NetworkPlayer = Game.Player.NetworkPlayer;
 
 namespace Game.Manager
 {

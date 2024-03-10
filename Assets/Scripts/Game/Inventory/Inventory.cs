@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NetLib.Utility;
+using Utilities;
+using Math = System.Math;
 
 namespace Game.Inventory
 {
+    public enum MetaData
+    {
+        None,
+        Equipped,
+        QuestItem,
+        Restorable,
+    }
+    
     [Serializable]
-    public struct InventoryItemStack
+    public class InventoryItemStack
     {
         public int ItemId;
         /// <summary>
@@ -15,6 +24,8 @@ namespace Game.Inventory
         /// </summary>
         public int InventoryId;
         public int Quantity;
+        public MetaData MetaData;
+        public uint MetaDataId;
     }
     
     public interface IInventory
@@ -23,13 +34,41 @@ namespace Game.Inventory
         int Count { get; }
         bool HasItemId(int itemId);
         int GetQuantity(int itemId);
-        void AddQuantity(int itemId, int quantity);
-        void AddQuantityToStack(int itemId, int quantity, int inventoryId = -1);
-        void SubtractQuantity(int itemId, int quantity);
-        void SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1);
+        /// <summary>
+        /// Add quantity to an existing stack or create a new stack
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="quantity"></param>
+        /// <returns>stack inventory Id</returns>
+        int AddQuantity(int itemId, int quantity);
+        /// <summary>
+        /// Add quantity to an existing stack if inventoryId is provided; otherwise, create a new stack
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="quantity"></param>
+        /// <param name="inventoryId"></param>
+        /// <returns>stack inventory Id</returns>
+        int AddQuantityToStack(int itemId, int quantity, int inventoryId = -1);
+        /// <summary>
+        /// Set quantity of an existing stack
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="quantity"></param>
+        /// <returns>stack inventory Id</returns>
+        int SubtractQuantity(int itemId, int quantity);
+        /// <summary>
+        /// Subtract quantity from an existing stack if inventoryId is provided; otherwise, subtract from first matching stacks
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="quantity"></param>
+        /// <param name="inventoryId"></param>
+        /// <returns>stack inventory Id</returns>
+        int SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1);
         IEnumerable<InventoryItemStack> GetItemStacks(int itemId);
         void SplitStack(int inventoryId, int quantity);
         void MergeStacks(int inventoryId1, int inventoryId2);
+        bool Changed { get; }
+        void ClearChanged();
     }
     
     [Serializable]
@@ -63,6 +102,7 @@ namespace Game.Inventory
                 }
                 inventoryItem.Quantity = quantity;
                 _items[i] = inventoryItem;
+                SetChanged();
                 return;
             }
             
@@ -72,6 +112,7 @@ namespace Game.Inventory
                 InventoryId = inventoryId,
                 Quantity = quantity
             });
+            SetChanged();
         }
 
         public int GetQuantity(int itemId)
@@ -79,64 +120,73 @@ namespace Game.Inventory
             return _items.Where(item => item.ItemId == itemId).Sum(item => item.Quantity);
         }
         
-        public void AddQuantity(int itemId, int quantity)
+        public int AddQuantity(int itemId, int quantity)
         {
             Assert.True(itemId > 0);
             
             if (quantity <= 0)
             {
-                return;
+                return -1;
             }
             
             var existingItem = _items.FirstOrDefault(item => item.ItemId == itemId);
-            if (existingItem.ItemId == 0)
+            if (existingItem == null)
             {
+                var newInventoryId = _inventoryId++;
                 _items.Add(new InventoryItemStack
                 {
                     ItemId = itemId,
-                    InventoryId = _inventoryId++,
+                    InventoryId = newInventoryId,
                     Quantity = quantity
                 });
-                return;
+                SetChanged();
+                return newInventoryId;
             }
             
             existingItem.Quantity += quantity;
+            SetChanged();
+            return existingItem.InventoryId;
         }
         
-        public void AddQuantityToStack(int itemId, int quantity, int inventoryId = -1)
+        public int AddQuantityToStack(int itemId, int quantity, int inventoryId = -1)
         {
             if (quantity <= 0)
             {
-                return;
+                return -1;
             }
 
             if (inventoryId == -1)
             {
+                var newInventoryId = _inventoryId++;
                 _items.Add(new InventoryItemStack
                 {
                     ItemId = itemId,
-                    InventoryId = _inventoryId++,
+                    InventoryId = newInventoryId,
                     Quantity = quantity
                 });
-                return;
+                SetChanged();
+                return newInventoryId;
             }
             
             var existingItem = _items.FirstOrDefault(item => item.InventoryId == inventoryId);
-            Assert.True(existingItem.ItemId != 0);
+            Assert.True(existingItem != null);
             
             existingItem.Quantity += quantity;
+            SetChanged();
+            return existingItem.InventoryId;
         }
         
-        public void SubtractQuantity(int itemId, int quantity)
+        public int SubtractQuantity(int itemId, int quantity)
         {
             if (quantity <= 0)
             {
-                return;
+                return -1;
             }
 
             Assert.True(quantity <= GetQuantity(itemId));
             
             var quantityToRemove = quantity;
+            
             for (var i = 0; i < _items.Count;)
             {
                 var inventoryItem = _items[i];
@@ -145,34 +195,57 @@ namespace Game.Inventory
                     i++;
                     continue;
                 }
+                if (quantityToRemove <= 0)
+                {
+                    break;
+                }
+                
                 if (inventoryItem.Quantity >= 0)
                 {
-                    inventoryItem.Quantity -= quantityToRemove;
+                    var amountToRemove = Math.Min(quantityToRemove, inventoryItem.Quantity);
+                    inventoryItem.Quantity -= amountToRemove;
                     _items[i] = inventoryItem;
-                    return;
+                    quantityToRemove -= amountToRemove;
+                    if (inventoryItem.Quantity <= 0)
+                    {
+                        _items.RemoveAt(i);
+                        continue;
+                    }
+                    else if (quantityToRemove == 0)
+                    {
+                        SetChanged();
+                        return inventoryItem.InventoryId;
+                    }
                 }
-                quantityToRemove -= inventoryItem.Quantity;
-                _items.RemoveAt(i);
             }
+            SetChanged();
+            return -1;
         }
         
-        public void SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1)
+        public int SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1)
         {
             if (quantity <= 0)
             {
-                return;
+                return -1;
             }
 
             if (inventoryId == -1)
             {
-                SubtractQuantity(itemId, quantity);
-                return;
+                return SubtractQuantity(itemId, quantity);
             }
             
             var existingItem = _items.FirstOrDefault(item => item.InventoryId == inventoryId);
-            Assert.True(existingItem.ItemId != 0);
+            Assert.True(existingItem != null);
             
             existingItem.Quantity -= quantity;
+            var stack = existingItem.InventoryId;
+            if (existingItem.Quantity <= 0)
+            {
+                _items.Remove(existingItem);
+                stack = -1;
+            }
+            SetChanged();
+            return stack;
         }
         
         public IEnumerable<InventoryItemStack> GetItemStacks(int itemId)
@@ -183,7 +256,7 @@ namespace Game.Inventory
         public void SplitStack(int inventoryId, int quantity)
         {
             var existingItem = _items.FirstOrDefault(item => item.InventoryId == inventoryId);
-            Assert.True(existingItem.ItemId != 0);
+            Assert.True(existingItem != null);
             Assert.True(existingItem.Quantity > quantity);
             
             existingItem.Quantity -= quantity;
@@ -193,18 +266,31 @@ namespace Game.Inventory
                 InventoryId = _inventoryId++,
                 Quantity = quantity
             });
+            SetChanged();
         }
         
         public void MergeStacks(int inventoryId1, int inventoryId2)
         {
             var stack1 = _items.FirstOrDefault(item => item.InventoryId == inventoryId1);
             var stack2 = _items.FirstOrDefault(item => item.InventoryId == inventoryId2);
-            Assert.True(stack1.ItemId != 0);
-            Assert.True(stack2.ItemId != 0);
+            Assert.True(stack1 != null);
+            Assert.True(stack2 != null);
             Assert.True(stack1.ItemId == stack2.ItemId);
             
             stack1.Quantity += stack2.Quantity;
             _items.Remove(stack2);
+            SetChanged();
+        }
+
+        protected void SetChanged()
+        {
+            Changed = true;
+        }
+        
+        public bool Changed { get; private set; }
+        public void ClearChanged()
+        {
+            Changed = false;
         }
     }
 }

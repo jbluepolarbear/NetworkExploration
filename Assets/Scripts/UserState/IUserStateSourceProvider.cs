@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Netcode;
+﻿using System.Collections.Generic;
 using Utilities;
 
 namespace UserState
@@ -38,6 +36,8 @@ namespace UserState
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public T GetOrMakeUserStateEntryForOwnerId<T>(ulong ownerId) where T : IUserStateEntry, new();
+        bool Changed { get; }
+        void ClearChanged();
     }
     
     public interface IUserStateSourceProvider

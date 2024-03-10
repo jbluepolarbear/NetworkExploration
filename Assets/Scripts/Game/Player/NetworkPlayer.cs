@@ -2,6 +2,7 @@
 using Contexts;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
+using Game.Camera;
 using Game.GameMode;
 using Game.Manager;
 using Input;
@@ -45,7 +46,7 @@ namespace Game.Player
         }
         
         public bool Active =>
-            ClientContext.Get<GameModeManager>()?.GetActiveGameMode == GameMode.GameMode.PlayerControlled;
+            ClientContext.Get<GameModeManager>()?.GetActiveGameMode == GameMode.GameModes.PlayerControlled;
 
         public Vector3 Position
         {
@@ -112,6 +113,40 @@ namespace Game.Player
 
             Rotation = Quaternion.Slerp(Rotation, Quaternion.LookRotation(_lastDirection, Vector3.up), Time.fixedDeltaTime * TurnSpeed);
         }
+        
+        private Vector3 _lastdirectionMagnitude = Vector3.forward;
+        
+        public void ProcessInput(Controls.PlayerControlledActions playerControlled)
+        {
+            var leftAxis = playerControlled.Move.ReadValue<Vector2>();
+            var directionMagnitude = new Vector3(leftAxis.x, 0.0f, leftAxis.y);
+                
+            directionMagnitude = Quaternion.Euler(0.0f, CameraProvider.Instance.CameraRotation.eulerAngles.y, 0.0f) * directionMagnitude;
+            
+            // Z positive it up can X positive is right
+            var acceleration = directionMagnitude * Acceleration;
+            _rigidbody.AddForce(acceleration * Time.fixedDeltaTime);
+            // Velocity += acceleration * Time.fixedDeltaTime;
+            if (_rigidbody.velocity.magnitude > Speed)
+            {
+                _rigidbody.velocity = _rigidbody.velocity * Speed;
+            }
+            //
+            // Position += Velocity * Time.fixedDeltaTime;
+            //
+            _rigidbody.velocity *= Drag;
+            if (_rigidbody.velocity.magnitude <= Math.Epsilon)
+            {
+                _rigidbody.velocity = Vector3.zero;
+            }
+
+            if (directionMagnitude.magnitude > Math.Epsilon)
+            {
+                _lastdirectionMagnitude = directionMagnitude;
+            }
+            
+            Rotation = Quaternion.Slerp(Rotation, Quaternion.LookRotation(_lastdirectionMagnitude, Vector3.up), Time.fixedDeltaTime * TurnSpeed);
+        }
 
         private static Vector3 GetRandomPositionOnXYPlane()
         {
@@ -152,7 +187,7 @@ namespace Game.Player
             }
 
             CameraProvider.Instance.ActiveCamera.Follow = transform;
-            yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameMode.PlayerControlled);
+            yield return ClientContext.Get<GameModeManager>().SetGameModeServer(GameMode.GameModes.PlayerControlled);
             yield return null;
         }
     }

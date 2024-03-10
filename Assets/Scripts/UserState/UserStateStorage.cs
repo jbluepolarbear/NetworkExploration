@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NetLib.Utility;
+using Utilities;
 
 namespace UserState
 {
@@ -55,6 +55,15 @@ namespace UserState
             entry.OwnerId = ownerId;
             
             return (T) entry;
+        }
+
+        public bool Changed => _userStateEntries.Any(entry => entry.Changed);
+        public void ClearChanged()
+        {
+            foreach (var entry in _userStateEntries)
+            {
+                entry.ClearChanged();
+            }
         }
 
         public T GetOrMakeSingleUserStateEntry<T>() where T : IUserStateEntry, new()

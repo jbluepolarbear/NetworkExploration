@@ -72,7 +72,6 @@ GameObject:
   - component: {fileID: 7336445153031776077}
   - component: {fileID: 5684663041491945281}
   - component: {fileID: 5477708401133746}
-  - component: {fileID: 1012004932010099408}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -232,19 +231,6 @@ MonoBehaviour:
   m_CameraActivatedEvent:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1012004932010099408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6712244519468422247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 861510a3fcff4cfab3ae71af3213c964, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Brain: {fileID: 5477708401133746}
 --- !u!1 &7773535562212343330
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,6 +246,7 @@ GameObject:
   - component: {fileID: 6355956853029146328}
   - component: {fileID: 5913717362699880744}
   - component: {fileID: 2148905727519463099}
+  - component: {fileID: 9166599222012627180}
   m_Layer: 0
   m_Name: ContextProviders
   m_TagString: Untagged
@@ -294,7 +281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3192210371
+  GlobalObjectIdHash: 3885280952
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -314,6 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52aa5af3e6eb48cdae706e5f7cc50ac0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _spawnPoint: {fileID: 0}
 --- !u!114 &8605081444069839469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -362,3 +350,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38426c7540fc4f5b81b29667715a75e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &9166599222012627180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7773535562212343330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e701ea0f70f37747a03400a387bacb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Brain: {fileID: 5477708401133746}

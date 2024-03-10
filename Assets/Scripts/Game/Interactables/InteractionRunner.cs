@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Extensions.GameObjects;
+using Game.GameMode;
+using Utilities;
 using Unity.Netcode;
 using UnityEngine;
-using Utilities;
 
 namespace Game.Interactables
 {
@@ -34,9 +35,30 @@ namespace Game.Interactables
         }
 
         public Vector3 Position => transform.position;
-        public bool Interactable => _interactable.Value;
+
+        public bool Interactable
+        {
+            get => _interactable.Value;
+            set
+            {
+                // May only be set on server
+                Assert.True(IsServer);
+                _interactable.Value = value;
+            }
+        }
+
         private Dictionary<InteractionType, IInteraction> _interactions = new();
-        public bool HasInteraction(InteractionType type) => _interactions.Any(x => x.Key == type);
+        public bool AllowedToInteract(InteractionType type, GameModes gameMode)
+        {
+            if (_interactions.TryGetValue(type, out var interaction))
+            {
+                return (interaction.RequiredGameModes & gameMode) != 0;
+            }
+
+            return false;
+        }
+
+        public bool HasInteraction(InteractionType type) => _interactions.TryGetValue(type, out _);
 
         public Promise<IInteractionResult> RunInteraction(InteractionType type)
         {

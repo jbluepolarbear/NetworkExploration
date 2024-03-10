@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetLib.Utility
+namespace Utilities
 {
     public class AssertException : Exception
     {
@@ -33,7 +33,21 @@ namespace NetLib.Utility
         public static void NotNull(object obj, string message = default)
         {
 #if UNITY_EDITOR
-            if (obj == null)
+            if (obj.IsUnityNull())
+            {
+                if (message != default)
+                {
+                    throw new AssertException(message);
+                }
+                throw new AssertException();
+            }
+#endif
+        }
+
+        public static void Null(object obj, string message = default)
+        {
+#if UNITY_EDITOR
+            if (!obj.IsUnityNull())
             {
                 if (message != default)
                 {

@@ -1,6 +1,4 @@
 ﻿using System;
-using Extensions.GameObjects;
-using UnityEngine;
 
 namespace Contexts
 {

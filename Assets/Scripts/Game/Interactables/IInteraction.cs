@@ -1,4 +1,5 @@
-﻿using Utilities;
+﻿using Game.GameMode;
+using Utilities;
 
 namespace Game.Interactables
 {
@@ -11,6 +12,8 @@ namespace Game.Interactables
     public interface IInteraction
     {
         InteractionType Type { get; }
+        GameModes RequiredGameModes { get; }
+        
         Promise<IInteractionResult> ExecuteClient();
     }
 }

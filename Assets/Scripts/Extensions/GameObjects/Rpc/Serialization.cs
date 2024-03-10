@@ -82,7 +82,7 @@ namespace Extensions.GameObjects.Rpc
                     writer.WriteValueSafe(longField);
                     break;
                 case ulong ulongField:
-                    writer.WriteValueSafe(SerializationTypes.UInt);
+                    writer.WriteValueSafe(SerializationTypes.ULong);
                     writer.WriteValueSafe(ulongField);
                     break;
                 case bool boolField:

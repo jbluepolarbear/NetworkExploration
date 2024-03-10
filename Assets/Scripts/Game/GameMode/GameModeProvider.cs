@@ -5,16 +5,16 @@ namespace Game.GameMode
 {
     public static class GameModeProvider
     {
-        public static IGameMode NewGameModeInstance(GameMode gameMode)
+        public static IGameMode NewGameModeInstance(GameModes gameModes)
         {
-            switch (gameMode)
+            switch (gameModes)
             {
-                case GameMode.PlayerControlled:
+                case GameModes.PlayerControlled:
                     return new PlayerControlledGameMode();
-                case GameMode.PausedInteraction:
+                case GameModes.PausedInteraction:
                     return new PausedInteractionGameMode();
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(gameMode), gameMode, $"GameMode: {gameMode} not found.");
+                    throw new ArgumentOutOfRangeException(nameof(gameModes), gameModes, $"GameMode: {gameModes} not found.");
             }
         }
     }

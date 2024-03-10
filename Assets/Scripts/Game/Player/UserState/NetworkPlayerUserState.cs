@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using Contexts;
 using Extensions.GameObjects;
-using Game.Inventory;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UserState;
 
 namespace Game.Player.UserState
@@ -51,13 +48,15 @@ namespace Game.Player.UserState
         }
 
         private float _lastSaveTime;
-        private float _saveInterval = 5.0f;
+        private float _saveInterval = 60.0f;
         protected override void NetworkFixedUpdate()
         {
             base.NetworkFixedUpdate();
-            if (IsServer && Time.time - _lastSaveTime >= _saveInterval)
+            var changed = PlayerUserState.Changed;
+            if (IsServer && (changed || Time.time - _lastSaveTime >= _saveInterval))
             {
                 _lastSaveTime = Time.time;
+                PlayerUserState.ClearChanged();
                 ServerContext.Get<UserStateProvider>().SetUserState(new UserStateId
                 {
                     Id = SystemInfo.deviceName

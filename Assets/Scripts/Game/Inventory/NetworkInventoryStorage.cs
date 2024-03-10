@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Contexts;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
@@ -96,7 +97,7 @@ namespace Game.Inventory
             _syncPromise.Fulfill();
         }
 
-        [RpcTargetServer(0)]
+        [RpcTargetServer(1)]
         public IEnumerator SyncServerRoutine(ulong clientId, RpcPromise<List<InventoryItemStack>> promise)
         {
             promise.Fulfill(_inventory.Inventory.Items);
@@ -127,11 +128,14 @@ namespace Game.Inventory
         protected virtual UserStateInventory GetInventory()
         {
             var userState = GetUserStateStorage();
-            return userState?.GetOrMakeUserStateEntryForOwnerId<UserStateInventory>(NetworkObject.NetworkObjectId);
+            var worldIdentifier = GetComponent<WorldIdentifier>();
+            return userState?.GetOrMakeUserStateEntryForOwnerId<UserStateInventory>(worldIdentifier.WorldId);
         }
 
-        public IReadOnlyList<InventoryItemStack> Items { get; }
-        public int Count { get; }
+        public IReadOnlyList<InventoryItemStack> Items => Inventory.Inventory.Items;
+        public int Count => Inventory.Inventory.Count;
+        public bool Empty => !Inventory.Inventory.Items.Any(stack => stack.Quantity > 0);
+
         public bool HasItemId(int itemId)
         {
             return Inventory.Inventory.HasItemId(itemId);
@@ -142,48 +146,48 @@ namespace Game.Inventory
             return Inventory.Inventory.GetQuantity(itemId);
         }
 
-        public void AddQuantity(int itemId, int quantity)
+        public int AddQuantity(int itemId, int quantity)
         {
             if (IsClient && !IsHost)
             {
                 throw new InvalidOperationException("Cannot AddQuantity on client");
             }
             
-            Inventory.Inventory.AddQuantity(itemId, quantity);
             _clientNeedsSync = true;
+            return Inventory.Inventory.AddQuantity(itemId, quantity);
         }
 
-        public void AddQuantityToStack(int itemId, int quantity, int inventoryId = -1)
+        public int AddQuantityToStack(int itemId, int quantity, int inventoryId = -1)
         {
             if (IsClient && !IsHost)
             {
                 throw new InvalidOperationException("Cannot AddQuantityToStack on client");
             }
             
-            Inventory.Inventory.AddQuantityToStack(itemId, quantity, inventoryId);
             _clientNeedsSync = true;
+            return Inventory.Inventory.AddQuantityToStack(itemId, quantity, inventoryId);
         }
 
-        public void SubtractQuantity(int itemId, int quantity)
+        public int SubtractQuantity(int itemId, int quantity)
         {
             if (IsClient && !IsHost)
             {
                 throw new InvalidOperationException("Cannot SubtractQuantity on client");
             }
             
-            Inventory.Inventory.SubtractQuantity(itemId, quantity);
             _clientNeedsSync = true;
+            return Inventory.Inventory.SubtractQuantity(itemId, quantity);
         }
 
-        public void SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1)
+        public int SubtractQuantityFromStack(int itemId, int quantity, int inventoryId = -1)
         {
             if (IsClient && !IsHost)
             {
                 throw new InvalidOperationException("Cannot SubtractQuantityFromStack on client");
             }
             
-            Inventory.Inventory.SubtractQuantityFromStack(itemId, quantity, inventoryId);
             _clientNeedsSync = true;
+            return Inventory.Inventory.SubtractQuantityFromStack(itemId, quantity, inventoryId);
         }
 
         public IEnumerable<InventoryItemStack> GetItemStacks(int itemId)
@@ -211,6 +215,12 @@ namespace Game.Inventory
             
             Inventory.Inventory.MergeStacks(inventoryId1, inventoryId2);
             _clientNeedsSync = true;
+        }
+
+        public bool Changed => Inventory.Inventory.Changed;
+        public void ClearChanged()
+        {
+            Inventory.Inventory.ClearChanged();
         }
     }
 }

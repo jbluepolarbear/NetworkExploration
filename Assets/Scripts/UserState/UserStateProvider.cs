@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using Contexts;
-using NetLib.Utility;
-using UserState.SourceProviders;
 using Utilities;
+using UserState.SourceProviders;
 
 namespace UserState
 {

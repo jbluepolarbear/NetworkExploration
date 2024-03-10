@@ -1,8 +1,6 @@
 ﻿using System.Collections;
-using Contexts;
 using Game.Inventory;
 using Game.Player.UserState;
-using Game.World;
 using UserState;
 
 namespace Game.Player

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Utilities
@@ -47,6 +46,20 @@ namespace Utilities
             var qz = (float) (System.Math.Cos(roll / 2.0f) * System.Math.Cos(pitch / 2.0f) * System.Math.Sin(yaw / 2.0f) - System.Math.Sin(roll / 2.0f) * System.Math.Sin(pitch / 2.0f) * System.Math.Cos(yaw / 2.0f));
             var qw = (float) (System.Math.Cos(roll / 2.0f) * System.Math.Cos(pitch / 2.0f) * System.Math.Cos(yaw / 2.0f) + System.Math.Sin(roll / 2.0f) * System.Math.Sin(pitch / 2.0f) * System.Math.Sin(yaw / 2.0f));
             return (qx, qy, qz, qw);
+        }
+        
+        public static Quaternion ShortestRotation(Quaternion from, Quaternion to)
+        {
+            var dot = Quaternion.Dot(from, to);
+            if (dot < 0.0f)
+            {
+                to.x = -to.x;
+                to.y = -to.y;
+                to.z = -to.z;
+                to.w = -to.w;
+            }
+
+            return to * Quaternion.Inverse(from);
         }
 
         public static uint SignedToUnsigned(int value)

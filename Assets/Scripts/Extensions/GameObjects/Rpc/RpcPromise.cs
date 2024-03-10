@@ -27,13 +27,17 @@ namespace Extensions.GameObjects.Rpc
         {
             Value = value;
             Fulfilled = true;
+            OnFulfilled?.Invoke();
         }
 
         public void FillError(RpcError error)
         {
             Error = error;
             Fulfilled = true;
+            OnFulfilled?.Invoke();
         }
+        
+        public event Action OnFulfilled;
 
         public override bool keepWaiting => !Fulfilled && Error == null;
 

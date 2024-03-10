@@ -1,12 +1,12 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using Contexts;
 using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
 using Game.GameMode;
-using Unity.Netcode;
+using Game.GameMode.Mode;
 using UnityEngine;
 using Utilities;
+using NetworkPlayer = Game.Player.NetworkPlayer;
 
 namespace Game.Interactables.Interactions
 {
@@ -17,7 +17,7 @@ namespace Game.Interactables.Interactions
             var gameModeManager = ClientContext.Get<GameModeManager>();
             var previousGameMode = gameModeManager.GetActiveGameMode;
             var gameModeRpcPromise = gameModeManager
-                .SetGameModeServer(GameMode.GameMode.PausedInteraction);
+                .SetGameModeServer(GameMode.GameModes.PausedInteraction);
             yield return gameModeRpcPromise;
             if (gameModeRpcPromise.Error != null)
             {
@@ -28,6 +28,13 @@ namespace Game.Interactables.Interactions
                 });
                 yield break;
             }
+            
+            gameModeManager.TryGetGameMode(out var gameMode);
+            Debug.Log($"Game Mode: {gameMode}");
+            var pausedGameMode = (PausedInteractionGameMode) gameMode;
+            
+            var networkPlayer = NetworkManager.LocalClient.PlayerObject.GetComponent<NetworkPlayer>();
+            pausedGameMode.OcclusionTarget = networkPlayer.transform;
             
             var rpcPromise = CallOnServer<string>(ExecuteServerRoutine);
             yield return rpcPromise;
@@ -68,6 +75,7 @@ namespace Game.Interactables.Interactions
 
         public InteractionType _interactionType = InteractionType.Action;
         public InteractionType Type => _interactionType;
+        public GameModes RequiredGameModes => GameModes.PlayerControlled;
 
         public Promise<IInteractionResult> ExecuteClient()
         {

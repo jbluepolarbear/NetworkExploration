@@ -1,19 +1,23 @@
-﻿using System.Collections;
-using Input;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 namespace Game.GameMode
 {
-    public enum GameMode
+    [Flags]
+    public enum GameModes
     {
-        None,
-        PlayerControlled,
-        PausedInteraction, // This is a game mode to prevent the player from moving while interacting with an object
+        None = 0,
+        PlayerControlled = 1 << 0,
+        PausedInteraction = 1 << 1, // This is a game mode to prevent the player from moving while interacting with an object
     }
     public interface IGameMode
     {
         ulong ClientId { get; set; }
+        Transform OcclusionTarget { get; }
+        float OcclusionRadius { get; }
         GameModeManager GameModeManager { get; set; }
-        GameMode GameMode { get; }
+        GameModes GameMode { get; }
         IEnumerator EnterGameMode();
         void UpdateGameMode(); 
         IEnumerator ExitGameMode();

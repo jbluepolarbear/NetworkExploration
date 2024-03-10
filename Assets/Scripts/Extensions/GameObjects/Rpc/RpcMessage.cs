@@ -1,5 +1,4 @@
-﻿using NetLib.Utility;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 
 namespace Extensions.GameObjects.Rpc
 {

@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Contexts;
-using Extensions.GameObjects;
 using Extensions.GameObjects.Rpc;
-using Unity.Netcode;
+using Game.GameMode.Mode;
+using Game.Interactables;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Utilities;
 
 namespace Game.GameMode
 {
@@ -13,7 +14,13 @@ namespace Game.GameMode
     {
         private Dictionary<ulong, IGameMode> _gameModes = new Dictionary<ulong, IGameMode>();
 
-        public GameMode GetActiveGameMode
+        public bool TryGetGameMode(out IGameMode gameMode)
+        {
+            gameMode = null;
+            return NetworkManager.LocalClient != null && GetGameMode(NetworkManager.LocalClient.ClientId, out gameMode);
+        }
+
+        public GameModes GetActiveGameMode
         {
             get
             {
@@ -22,7 +29,7 @@ namespace Game.GameMode
                     return gameMode.GameMode;
                 }
 
-                return GameMode.None;
+                return GameModes.None;
             }
         }
 
@@ -36,13 +43,13 @@ namespace Game.GameMode
             _gameModes.Remove(clientId);
         }
 
-        public RpcPromise SetGameModeServer(GameMode gameMode)
+        public RpcPromise SetGameModeServer(GameModes gameModes)
         {
-            return CallOnServer(SetGameModeServerRoutine, gameMode);
+            return CallOnServer(SetGameModeServerRoutine, gameModes);
         }
 
         [RpcTargetServer(1)]
-        public IEnumerator SetGameModeServerRoutine(GameMode gameMode, ulong clientId, RpcPromise promise)
+        public IEnumerator SetGameModeServerRoutine(GameModes gameModes, ulong clientId, RpcPromise promise)
         {
             if (GetGameMode(clientId, out var previousGameMode))
             {
@@ -56,15 +63,16 @@ namespace Game.GameMode
 
             if (NetworkManager.LocalClient != null && NetworkManager.LocalClient.ClientId != clientId)
             {
-                yield return CallOnClient(StartGameModeClientRoutine, clientId, gameMode);
+                yield return CallOnClient(StartGameModeClientRoutine, clientId, gameModes);
             }
-            yield return StartCoroutine(StartGameMode(clientId, gameMode));
+            yield return StartGameMode(clientId, gameModes);
 
             promise.Fulfill();
         }
 
         protected override void NetworkFixedUpdate()
         {
+            InputSystem.Update();
             foreach (var gameMode in _gameModes)
             {
                 gameMode.Value.UpdateGameMode();
@@ -81,9 +89,9 @@ namespace Game.GameMode
             yield return null;
         }
 
-        private IEnumerator StartGameMode(ulong clientId, GameMode gameMode)
+        private IEnumerator StartGameMode(ulong clientId, GameModes gameModes)
         {
-            var newGameMode = GameModeProvider.NewGameModeInstance(gameMode);
+            var newGameMode = GameModeProvider.NewGameModeInstance(gameModes);
             newGameMode.ClientId = clientId;
             newGameMode.GameModeManager = this;
             yield return newGameMode.EnterGameMode();
@@ -103,9 +111,9 @@ namespace Game.GameMode
         }
 
         [RpcTargetClient(1)]
-        public IEnumerator StartGameModeClientRoutine(GameMode gameMode, RpcPromise promise)
+        public IEnumerator StartGameModeClientRoutine(GameModes gameModes, RpcPromise promise)
         {
-            yield return StartGameMode(NetworkManager.LocalClient.ClientId, gameMode);
+            yield return StartGameMode(NetworkManager.LocalClient.ClientId, gameModes);
             promise.Fulfill();
         }
 
@@ -114,6 +122,41 @@ namespace Game.GameMode
         {
             yield return ExitGameMode(NetworkManager.LocalClient.ClientId);
             promise.Fulfill();
+        }
+
+        public Promise<IGameMode> SwitchGameMode(GameModes gameModes)
+        {
+            var promise = new Promise<IGameMode>();
+            StartCoroutine(SwitchGameModeRoutine(gameModes, promise));
+            return promise;
+        }
+
+        private IEnumerator SwitchGameModeRoutine(GameModes gameModes, Promise<IGameMode> promise)
+        {
+            var gameModeRpcPromise = SetGameModeServer(gameModes);
+            yield return gameModeRpcPromise;
+            if (gameModeRpcPromise.Error != null)
+            {
+                promise.FillError(new PromiseError
+                {
+                    Code = PromiseErrorCodes.RpcError,
+                    Reason = $"Code: {gameModeRpcPromise.Error.Code}, Reason: {gameModeRpcPromise.Error.Reason}"
+                });
+                yield break;
+            }
+
+            if (TryGetGameMode(out var gameMode))
+            {
+                Debug.Log($"Game Mode: {gameMode}");
+                promise.Fulfill(gameMode);
+                yield break;
+            }
+
+            promise.FillError(new PromiseError
+            {
+                Code = PromiseErrorCodes.NotFound,
+                Reason = $"Game Mode not found after switching to {gameModes}"
+            });
         }
     }
 }

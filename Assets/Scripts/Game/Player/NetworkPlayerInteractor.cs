@@ -1,20 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Contexts;
 using Extensions.GameObjects;
 using Game.GameMode;
-using Unity.VisualScripting;
 using UnityEngine;
+using Utilities;
 
 namespace Game.Interactables
 {
     [DisallowMultipleComponent]
     public class NetworkPlayerInteractor : NetworkBehaviourExt
     {
-        private List<IInteractable> _interactables = new List<IInteractable>();
-        
+        private HashSet<IInteractable> _interactables = new ();
         public IInteractable Target { get; private set; }
-        public bool CanRunInteraction => Target is { Interactable: true } && !RunningInteraction && ClientContext.Get<GameModeManager>()?.GetActiveGameMode == GameMode.GameMode.PlayerControlled;
+        public bool CanRunInteraction => Target is { Interactable: true } && !RunningInteraction;
         public bool RunningInteraction { get; private set; }
         private void OnTriggerEnter(Collider other)
         {
@@ -45,7 +45,13 @@ namespace Game.Interactables
         
         private void PruneInteractables()
         {
-            _interactables.RemoveAll(x => x.IsUnityNull());
+            _interactables.RemoveWhere(x => x.IsUnityNull());
+        }
+        
+        public void ClearInteractables()
+        {
+            _interactables.Clear();
+            UpdateTarget();
         }
 
         private void UpdateTarget()
@@ -61,6 +67,11 @@ namespace Game.Interactables
             IInteractable target = null;
             foreach (var interactable in _interactables)
             {
+                if (interactable.Interactable == false)
+                {
+                    continue;
+                }
+                
                 var vector = interactable.Position - position;
                 var distance = Mathf.Abs(Vector3.Dot(forward, vector));
                 if (distance < closest)
@@ -75,7 +86,7 @@ namespace Game.Interactables
 
         public void RunInteraction(InteractionType type)
         {
-            if (Target == null)
+            if (Target == null || RunningInteraction)
             {
                 return;
             }

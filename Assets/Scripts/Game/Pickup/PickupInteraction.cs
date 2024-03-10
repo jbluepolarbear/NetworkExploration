@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using Extensions.GameObjects;
-using Extensions.GameObjects.Rpc;
+using Game.GameMode;
 using Game.Interactables;
 using Unity.Netcode;
 using UnityEngine;
@@ -22,6 +22,8 @@ namespace Game.Pickup
         }
 
         public InteractionType Type => InteractionType.Action;
+        public GameModes RequiredGameModes => GameModes.PlayerControlled;
+
         public Promise<IInteractionResult> ExecuteClient()
         {
             var promise = new Promise<IInteractionResult>();

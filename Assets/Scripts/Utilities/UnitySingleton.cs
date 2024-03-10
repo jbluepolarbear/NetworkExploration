@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace NetLib.Utility
+namespace Utilities
 {
     public class UnitySingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
